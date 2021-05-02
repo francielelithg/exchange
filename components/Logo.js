@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  Link,
   Typography
 } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
@@ -8,7 +9,9 @@ const Logo = () => {
   const classes = useStyles()
 
   return (
-    <Typography variant='h1' className={classes.logo}>{`Remitbee`}</Typography>
+    <Link underline='none' href="/">
+      <Typography variant='h1' className={classes.logo}>{`Remitbee`}</Typography>
+    </Link>
   )
 }
 

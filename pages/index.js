@@ -14,24 +14,21 @@ import Footer from '../components/Footer'
 import Copyright from '../components/Copyright'
 import { makeStyles } from '@material-ui/core/styles'
 import countryService from '../services/contries'
+import { useRouter } from 'next/router'
 
 const Home = props => {
   const classes = useStyles()
+  const router = useRouter()
   const [currencies] = useState(props.currencies)
   const [currenciesPair, setCurrenciesPair] = useState(null)
-
-  const title = currenciesPair ? `Exchange ${currenciesPair.source} to ${currenciesPair.target} | Remitbee` : `Remitbee`
-  const description = currenciesPair ? `Remitbee has the best fees for you to exchange ${currenciesPair.source} to ${currenciesPair.target}. Give it a try!`
-    : `Remitbee has the best fees for you to exchange money abroad`
 
   return (
     <div>
       <Head>
-        <title>{title}</title>
-        <meta name='description' content={description} />
-        <link rel='icon' href='/favicon.ico' />
+        <title>{`Remitbee`}</title>
+        <meta name='description' content={`Remitbee has the best fees for you to exchange money abroad`} />
         <link rel='canonical' href='http://localhost:3000/'/>
-        <link rel='alternate' hrefLang='x-default' href='http://localhost:3000/'/>
+        <link rel='alternate' hrefLang='x-default' href={`http://localhost:3000${router.asPath}`} />
       </Head>
 
       <main>

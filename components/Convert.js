@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Button,
@@ -24,15 +24,37 @@ const Convert = props => {
   const [result, setResult] = useState(null)
   const [final, setFinal] = useState('')
   const [listCurrencies] = useState(props.currencies)
-  const [source, setSource] = useState('')
-  const [target, setTarget] = useState('')
+  const [source, setSource] = useState(router.query ? listCurrencies.find(a => a.alpha3Code === router.query.from) : null)
+  const [target, setTarget] = useState(router.query ? listCurrencies.find(a => a.alpha3Code === router.query.to) : null)
   const [open, setOpen] = useState(false)
 
   const { values, handleChange } = useForm({
-    from: '',
-    to: '',
-    amount: '',
+    from: router.query ? router.query.from : '',
+    to: router.query ? router.query.to : '',
+    amount: router.query ? router.query.amount : ''
   })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await covertService.convert(source.currencyCode, target.currencyCode)
+      if (result.val) {
+        setTimeout(() => {
+          setResult(result.val)
+          setFinal((parseFloat(values.amount) * result.val).toFixed(2))
+          setOpen(false)
+        }, 1500)
+      }
+    }
+
+    if (values.from && values.from !== '' && values.to && values.to !== '' && values.amount && values.amount !== '') {
+      setOpen(true)
+      const sourceCountry = listCurrencies.find(a => a.alpha3Code === values.from)
+      const targetCountry = listCurrencies.find(a => a.alpha3Code === values.to)
+      setSource(sourceCountry)
+      setTarget(targetCountry)
+      fetchData()
+    }
+  }, [router.query])
 
   const handleSwap = () => {
     if (values.from && values.to) {
@@ -58,24 +80,13 @@ const Convert = props => {
     setOpen(true)
     setResult(null)
     setFinal('')
-    const source = listCurrencies.filter(a => a.alpha3Code === values.from)[0]
-    const target = listCurrencies.filter(a => a.alpha3Code === values.to)[0]
-    const result = await covertService.convert(source.currencyCode, target.currencyCode)
-    if (result.val) {
-      setTimeout(() => {
-        router.push(`/?source=${source.currencyCode}&target=${target.currencyCode}&amount=${values.amount}`, undefined, { shallow: true })
-        setResult(result.val)
-        setFinal((parseFloat(values.amount) * result.val).toFixed(2))
-        setSource(source.currencyCode)
-        setTarget(target.currencyCode)
-        setOpen(false)
-        const obj = {
-          source: source.currencyCode,
-          target: target.currencyCode
-        }
-        props.update(obj)
-      }, 1500)
-    }
+    const sourceCountry = listCurrencies.find(a => a.alpha3Code === values.from)
+    const targetCountry = listCurrencies.find(a => a.alpha3Code === values.to)
+    setSource(sourceCountry)
+    setTarget(targetCountry)
+    const options = router.asPath === '/' ? {} : { shallow : true }
+    router.push('/[from]/[source]/[to]/[target]/[amount]',
+     `/${values.from}/${sourceCountry.currencyCode}/${values.to}/${targetCountry.currencyCode}/${values.amount}`, options)
   }
 
   return (
@@ -162,7 +173,7 @@ const Convert = props => {
         </Box>
         <Box display='flex'>
           <Box flexGrow={1} pb={3} px={3}>
-            {result && <Typography variant='h6'>{`1 ${source} = ${result} ${target}`}</Typography>}
+            {result && <Typography variant='h6'>{`1 ${source.currencyCode} = ${result} ${target.currencyCode}`}</Typography>}
           </Box>
           <Box pb={3} px={3}>
             <Typography variant='h6' align='right'>{`Our exchange fee: `}<b>{`0.00`}</b></Typography>
